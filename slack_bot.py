@@ -1,5 +1,7 @@
 import os
 import logging
+import signal
+import sys
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from slack_sdk.socket_mode import SocketModeClient
@@ -22,6 +24,7 @@ class SlackCSVBot:
             web_client=self.client
         )
         self.socket_client.socket_mode_request_listeners.append(self.process_request)
+        self.running = False
     
     def process_request(self, client: SocketModeClient, req: SocketModeRequest):
         """Process incoming Slack events."""
@@ -130,9 +133,44 @@ class SlackCSVBot:
             logger.error(f"Error sending error message: {e}")
     
     def start(self):
-        """Start the bot."""
-        logger.info("Starting Slack CSV Bot...")
-        self.socket_client.connect()
+        """Start the bot and keep it running until Ctrl+C."""
+        def signal_handler(signum, frame):
+            logger.info("Received interrupt signal. Shutting down gracefully...")
+            self.running = False
+            if self.socket_client:
+                self.socket_client.disconnect()
+            sys.exit(0)
+        
+        # Set up signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        
+        try:
+            logger.info("Starting Slack CSV Bot...")
+            logger.info("Bot is ready to process CSV files. Press Ctrl+C to stop.")
+            self.running = True
+            
+            # Start the socket mode connection
+            self.socket_client.connect()
+            
+            # Keep the main thread alive
+            while self.running:
+                try:
+                    signal.pause()  # Wait for signals
+                except AttributeError:
+                    # signal.pause() is not available on Windows
+                    import time
+                    while self.running:
+                        time.sleep(1)
+                        
+        except KeyboardInterrupt:
+            logger.info("Keyboard interrupt received. Shutting down...")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+        finally:
+            if self.socket_client:
+                self.socket_client.disconnect()
+            logger.info("Bot stopped.")
 
 
 if __name__ == "__main__":
