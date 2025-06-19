@@ -7,8 +7,10 @@ def validate_csv_format(file_content: bytes) -> bool:
     """Validate if the file content is a valid CSV with comma separation."""
     try:
         content_str = file_content.decode('utf-8')
+        if not content_str.strip():
+            return False
         df = pd.read_csv(io.StringIO(content_str))
-        return True
+        return len(df.columns) > 0 and not all(col.startswith('Unnamed:') for col in df.columns)
     except Exception:
         return False
 
