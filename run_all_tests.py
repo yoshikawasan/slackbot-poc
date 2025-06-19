@@ -10,6 +10,7 @@ import os
 # Import test modules
 import test_csv_processor
 import test_server_integration
+import test_file_upload
 
 
 def run_all_tests():
@@ -24,6 +25,7 @@ def run_all_tests():
     # Add test modules
     suite.addTests(loader.loadTestsFromModule(test_csv_processor))
     suite.addTests(loader.loadTestsFromModule(test_server_integration))
+    suite.addTests(loader.loadTestsFromModule(test_file_upload))
     
     # Run tests
     runner = unittest.TextTestRunner(verbosity=2)

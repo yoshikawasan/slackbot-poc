@@ -113,14 +113,43 @@ class SlackCSVBot:
             except SlackApiError as e:
                 logger.error(f"Error sending message: {e}")
         else:
-            formatted_results = format_results_for_slack(results)
-            try:
+            self.upload_processed_files(channel, results, csv_files)
+    
+    def upload_processed_files(self, channel, results, original_files):
+        """Upload processed CSV files to Slack."""
+        try:
+            if len(results) == 1:
+                # Single file
+                filename = f"processed_{original_files[0]['name']}"
+                self.client.files_upload_v2(
+                    channel=channel,
+                    content=results[0],
+                    filename=filename,
+                    title=f"Processed {original_files[0]['name']}",
+                    initial_comment="CSV file processed - integer columns have been doubled! 📊"
+                )
+            else:
+                # Multiple files
+                for i, (result, original_file) in enumerate(zip(results, original_files)):
+                    filename = f"processed_{original_file['name']}"
+                    comment = f"Processed file {i+1}/{len(results)}: {original_file['name']}" if i == 0 else None
+                    self.client.files_upload_v2(
+                        channel=channel,
+                        content=result,
+                        filename=filename,
+                        title=f"Processed {original_file['name']}",
+                        initial_comment=comment
+                    )
+                
+                # Send summary message
                 self.client.chat_postMessage(
                     channel=channel,
-                    text=formatted_results
+                    text=f"✅ Successfully processed {len(results)} CSV files! Integer columns have been doubled."
                 )
-            except SlackApiError as e:
-                logger.error(f"Error sending message: {e}")
+                
+        except SlackApiError as e:
+            logger.error(f"Error uploading files: {e}")
+            self.send_error_message(channel, "Error uploading processed CSV files")
     
     def send_error_message(self, channel, message):
         """Send error message to channel."""
