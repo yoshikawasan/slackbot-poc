@@ -8,7 +8,7 @@ from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from dotenv import load_dotenv
-from csv_processor import process_csv_files, format_results_for_slack
+from .csv_processor import process_csv_files, format_results_for_slack
 
 load_dotenv()
 

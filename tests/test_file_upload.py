@@ -4,9 +4,15 @@ Test file upload functionality for the Slack CSV bot.
 """
 
 import unittest
+import sys
+from pathlib import Path
 from unittest.mock import patch, MagicMock, call
-import slack_bot
-from csv_processor import process_csv_files
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import slackbot_poc.bot as slack_bot
+from slackbot_poc.csv_processor import process_csv_files
 
 
 class TestFileUpload(unittest.TestCase):
@@ -28,8 +34,8 @@ class TestFileUpload(unittest.TestCase):
         print("Testing single file upload...")
         
         with patch.dict('os.environ', {'SLACK_BOT_TOKEN': 'test', 'SLACK_APP_TOKEN': 'test'}):
-            with patch('slack_bot.WebClient'):
-                with patch('slack_bot.SocketModeClient'):
+            with patch('slackbot_poc.bot.WebClient'):
+                with patch('slackbot_poc.bot.SocketModeClient'):
                     bot = slack_bot.SlackCSVBot()
                     bot.client.files_upload_v2 = MagicMock()
                     
@@ -54,8 +60,8 @@ class TestFileUpload(unittest.TestCase):
         print("Testing multiple file upload...")
         
         with patch.dict('os.environ', {'SLACK_BOT_TOKEN': 'test', 'SLACK_APP_TOKEN': 'test'}):
-            with patch('slack_bot.WebClient'):
-                with patch('slack_bot.SocketModeClient'):
+            with patch('slackbot_poc.bot.WebClient'):
+                with patch('slackbot_poc.bot.SocketModeClient'):
                     bot = slack_bot.SlackCSVBot()
                     bot.client.files_upload_v2 = MagicMock()
                     bot.client.chat_postMessage = MagicMock()
@@ -104,8 +110,8 @@ class TestFileUpload(unittest.TestCase):
         from slack_sdk.errors import SlackApiError
         
         with patch.dict('os.environ', {'SLACK_BOT_TOKEN': 'test', 'SLACK_APP_TOKEN': 'test'}):
-            with patch('slack_bot.WebClient'):
-                with patch('slack_bot.SocketModeClient'):
+            with patch('slackbot_poc.bot.WebClient'):
+                with patch('slackbot_poc.bot.SocketModeClient'):
                     bot = slack_bot.SlackCSVBot()
                     bot.client.files_upload_v2 = MagicMock()
                     bot.client.files_upload_v2.side_effect = SlackApiError("Upload failed", response={'error': 'upload_failed'})

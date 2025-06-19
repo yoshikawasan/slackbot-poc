@@ -6,6 +6,10 @@ Test runner for all test suites in the slackbot-poc project.
 import unittest
 import sys
 import os
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Import test modules
 import test_csv_processor

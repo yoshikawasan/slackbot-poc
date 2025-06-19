@@ -9,6 +9,7 @@ import time
 import signal
 import subprocess
 import threading
+from pathlib import Path
 
 
 def test_server_with_timeout():
@@ -23,8 +24,8 @@ import signal
 import time
 from unittest.mock import patch
 
-# Add current directory to path
-sys.path.insert(0, ".")
+# Add src directory to path
+sys.path.insert(0, "src")
 
 def timeout_handler(signum, frame):
     print("✓ Timeout reached, server can be stopped")
@@ -37,9 +38,9 @@ signal.alarm(3)
 try:
     # Mock tokens to avoid real Slack connection
     with patch.dict(os.environ, {"SLACK_BOT_TOKEN": "xoxb-test", "SLACK_APP_TOKEN": "xapp-test"}):
-        with patch("slack_bot.SocketModeClient") as mock_client:
+        with patch("slackbot_poc.bot.SocketModeClient") as mock_client:
             # Import after patching
-            import slack_bot
+            import slackbot_poc.bot as slack_bot
             
             print("Starting server with 3-second timeout...")
             bot = slack_bot.SlackCSVBot()
@@ -107,10 +108,11 @@ def test_ctrl_c_simulation():
     
     try:
         from unittest.mock import patch, MagicMock
-        import slack_bot
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        import slackbot_poc.bot as slack_bot
         
         with patch.dict(os.environ, {'SLACK_BOT_TOKEN': 'test', 'SLACK_APP_TOKEN': 'test'}):
-            with patch('slack_bot.SocketModeClient') as mock_client:
+            with patch('slackbot_poc.bot.SocketModeClient') as mock_client:
                 with patch('signal.pause') as mock_pause:
                     # Simulate KeyboardInterrupt after short delay
                     def raise_interrupt():

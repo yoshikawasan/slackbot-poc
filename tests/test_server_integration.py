@@ -1,8 +1,13 @@
 import unittest
 import os
 import sys
+from pathlib import Path
 from unittest.mock import patch, MagicMock
-from csv_processor import process_csv_files, format_results_for_slack
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from slackbot_poc.csv_processor import process_csv_files, format_results_for_slack
 
 
 class TestServerIntegration(unittest.TestCase):
@@ -13,7 +18,7 @@ class TestServerIntegration(unittest.TestCase):
         print("Testing server initialization...")
         
         # Import and test server initialization
-        import slack_bot
+        import slackbot_poc.bot as slack_bot
         
         try:
             bot = slack_bot.SlackCSVBot()
